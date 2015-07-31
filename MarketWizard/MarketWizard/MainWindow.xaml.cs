@@ -49,9 +49,16 @@ namespace MarketWizard
             Application.Current.Shutdown();
         }
 
-        private void editButton_Click(object sender, RoutedEventArgs e)
+        private void previewButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("This still needs to be fleshed out", "Oops!");
+            String addressLoc = "", bodyLoc = "", subject = "", attachmentLoc = "", currentDir = "";
+            gatherEmailStrings(ref addressLoc, ref bodyLoc, ref subject,
+                                ref attachmentLoc, ref currentDir);
+           
+            EmailObject previewEmail = new EmailObject(attachmentLoc, bodyLoc, "previewemail@notanemail.com", subject);
+
+            PreviewWindow emailPreviewWindow = new PreviewWindow(previewEmail);
+            emailPreviewWindow.Show();
         }
 
         private void Textbox_TextChanged(object sender, TextChangedEventArgs e)
@@ -59,6 +66,12 @@ namespace MarketWizard
             if (!addressTextbox.GetLineText(0).Equals("") && !bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
             {
                 sendButton.IsEnabled = true;
+                previewButton.IsEnabled = true;
+            }
+            else if (!bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
+            {
+                sendButton.IsEnabled = false;
+                previewButton.IsEnabled = true;
             }
             else
             {
@@ -69,11 +82,9 @@ namespace MarketWizard
         private void startNewBatch()
         {
             bool failureOccurred = false;
-            String addressLoc = addressTextbox.Text.Replace("\"", "\\");
-            String bodyLoc = bodyTextbox.Text.Replace("\"", "\\"); ;
-            String subject = subjectTextbox.Text.Replace("\"", "\\"); ;
-            String attachmentLoc = attachmentTextbox.Text.Replace("\"", "\\"); ;
-            String currentDir = Directory.GetCurrentDirectory();
+            String addressLoc = "", bodyLoc="", subject="", attachmentLoc="", currentDir="";
+            gatherEmailStrings(ref addressLoc, ref bodyLoc, ref subject,
+                                ref attachmentLoc, ref currentDir);
 
             // Check to see if there is a log folder
             if (!Directory.Exists(currentDir + LOG_DIR))
@@ -142,6 +153,17 @@ namespace MarketWizard
             MessageBox.Show("All logs have been saved and closed", "Attention!");
             
             subjectTextbox.Clear();
+        }
+
+        private void gatherEmailStrings(ref String addressLoc, ref String bodyLoc,
+                                        ref String subject, ref String attachmentLoc,
+                                        ref String currentDir)
+        {
+            addressLoc = addressTextbox.Text.Replace("\"", "\\");
+            bodyLoc = bodyTextbox.Text.Replace("\"", "\\");
+            subject = subjectTextbox.Text.Replace("\"", "\\");
+            attachmentLoc = attachmentTextbox.Text.Replace("\"", "\\");
+            currentDir = Directory.GetCurrentDirectory();
         }
 
         private void browseBody_Click(object sender, RoutedEventArgs e)

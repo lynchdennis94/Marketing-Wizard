@@ -32,6 +32,6 @@
         </Menu>
         <Button x:Name="sendButton" Content="Send" HorizontalAlignment="Left" Margin="220,521,0,0" VerticalAlignment="Top" Width="86" Click="sendButton_Click" Height="34" IsEnabled="False"/>
         <Button x:Name="quitButton" Content="Quit" HorizontalAlignment="Left" Margin="542,521,0,0" VerticalAlignment="Top" Width="86" Height="34" Click="quitButton_Click"/>
-        <Button x:Name="editButton" Content="Edit" HorizontalAlignment="Left" Margin="380,521,0,0" VerticalAlignment="Top" Width="86" Height="34" Click="editButton_Click"/>
+        <Button x:Name="previewButton" Content="Preview" HorizontalAlignment="Left" Margin="380,521,0,0" VerticalAlignment="Top" Width="86" Height="34" Click="previewButton_Click" IsEnabled="False"/>
     </Grid>
 </Window>

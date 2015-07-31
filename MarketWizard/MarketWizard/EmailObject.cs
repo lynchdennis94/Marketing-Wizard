@@ -9,7 +9,7 @@ using OutlookApp = Microsoft.Office.Interop.Outlook.Application;
 
 namespace MarketWizard
 {
-    class EmailObject
+    public class EmailObject
     {
         private OutlookApp outlookApp;
         private Outlook.MailItem mailItem;
@@ -46,6 +46,21 @@ namespace MarketWizard
             }
             // Add recepient
             mailItem.Recipients.Add(address);
+        }
+
+        public String getSubject()
+        {
+            return mailItem.Subject;
+        }
+
+        public String getBody()
+        {
+            return mailItem.Body;
+        }
+
+        public Outlook.Attachments getAttachments()
+        {
+            return mailItem.Attachments;
         }
 
         
