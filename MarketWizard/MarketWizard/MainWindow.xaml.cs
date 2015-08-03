@@ -24,10 +24,15 @@ namespace MarketWizard
     {
         private const string LOG_DIR = "\\batch_logs";
         private const string LOG_START = "Log file for Marketing Wizard v1.1";
+        private Utilities.StatusTracker currentStatus;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            // Initialize a new status
+            currentStatus = new Utilities.StatusTracker();
+            
         }
            
         private void sendButton_Click(object sender, RoutedEventArgs e)
@@ -105,6 +110,9 @@ namespace MarketWizard
 
             // Create the dictionary for the addresses
             Dictionary<int, Utilities.ExcelRowBinder> allAddresses = excelObj.getAddresses();
+            currentStatus.setObjectiveTotal(allAddresses.Count);
+            currentStatus.setStatus("Sending Messages");
+            statusText.Text = currentStatus.getObjectiveStatus();
             sendingProgressBar.Maximum = allAddresses.Count;
             
             // Loop through addresses and make a new email for each one
@@ -124,6 +132,8 @@ namespace MarketWizard
                         newEmail.sendEmail();
                         try
                         {
+                            currentStatus.incrementCurrentObjective();
+                            statusText.Text = currentStatus.getObjectiveStatus();
                             excelObj.logSuccess(currentBinder.getRowNumber());
                         }
                         catch (Exception logException)
@@ -158,6 +168,8 @@ namespace MarketWizard
             MessageBox.Show("All logs have been saved and closed", "Attention!");
             
             subjectTextbox.Clear();
+            currentStatus.setStatus("");
+            statusText.Text = "";
         }
 
         private void gatherEmailStrings(ref String addressLoc, ref String bodyLoc,
