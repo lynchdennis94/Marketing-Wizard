@@ -14,7 +14,7 @@ namespace MarketWizard
         private ExcelApp excelApp;
         private Excel._Worksheet excelWorksheet;
         private Excel.Workbook excelWorkbook;
-        private Dictionary<int, String> addressMap;
+        private Dictionary<int, Utilities.ExcelRowBinder> addressMap;
         private int sentCol = 0;
 
         public ExcelObject(String sheetPath)
@@ -29,7 +29,7 @@ namespace MarketWizard
             excelWorksheet = excelWorkbook.Sheets[1];
             Excel.Range excelRange = excelWorksheet.UsedRange;
 
-            addressMap = new Dictionary<int, string>();
+            addressMap = new Dictionary<int, Utilities.ExcelRowBinder>();
 
             fillAddressList(excelWorkbook, excelWorksheet, excelRange);
         }
@@ -64,14 +64,22 @@ namespace MarketWizard
             }
 
             // Now, read all of the data from that column into the list
+            int indexKey = 0;
             for (int newRow = 2; newRow <= rowCount; newRow++)
             {
-                String newAddr = excelRange.Cells[newRow, emailColumn].Value2.ToString();
-                addressMap.Add(newRow, newAddr);
+                String newAddrStr = excelRange.Cells[newRow, emailColumn].Value2.ToString();
+                String[] newAddrArray = newAddrStr.Split(','); // Account for multiple emails per cell
+                foreach (String newAddr in newAddrArray)
+                {
+
+                    addressMap.Add(indexKey, new Utilities.ExcelRowBinder(newRow, newAddr));
+                    indexKey++;
+                }
+                
             }
         }
 
-        public Dictionary<int, String> getAddresses()
+        public Dictionary<int, Utilities.ExcelRowBinder> getAddresses()
         {
             return addressMap;
         }

@@ -104,15 +104,20 @@ namespace MarketWizard
             ExcelObject excelObj = new ExcelObject(addressLoc);
 
             // Create the dictionary for the addresses
-            Dictionary<int, String> allAddresses = excelObj.getAddresses();
+            Dictionary<int, Utilities.ExcelRowBinder> allAddresses = excelObj.getAddresses();
             sendingProgressBar.Maximum = allAddresses.Count;
             
             // Loop through addresses and make a new email for each one
             foreach (int keyIndex in allAddresses.Keys)
             {
                 String newAddr;
-                if (allAddresses.TryGetValue(keyIndex, out newAddr) == true)
+                Utilities.ExcelRowBinder currentBinder;
+                
+                // Need to extract the email value from the ExcelRowBinder
+
+                if (allAddresses.TryGetValue(keyIndex, out currentBinder) == true)
                 {
+                    newAddr = currentBinder.getValue();
                     EmailObject newEmail = new EmailObject(attachmentLoc, bodyLoc, newAddr, subject);
                     try
                     {
