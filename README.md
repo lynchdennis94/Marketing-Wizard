@@ -1,4 +1,4 @@
-# Marketing-Wizard v1.1a
+# Marketing-Wizard v1.1b
 A small desktop application to handle your marketing needs!
 
 # About Marketing Wizard
@@ -35,3 +35,4 @@ After the initial commit (which occurred with an already funcitoning program), v
 
 # Version History
 V1.1a: Added initial project files to source control, created README.md
+V1.1b: Added a preview window that will display the subject and body of the email to be sent out.  Still need to include preview for attachments, as well as provide a way to send emails straight from the preview window if desired (or save any changes made in the preview window to the resulting email).
