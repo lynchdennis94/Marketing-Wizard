@@ -71,9 +71,11 @@ namespace MarketWizard
                 String[] newAddrArray = newAddrStr.Split(','); // Account for multiple emails per cell
                 foreach (String newAddr in newAddrArray)
                 {
-
-                    addressMap.Add(indexKey, new Utilities.ExcelRowBinder(newRow, newAddr));
-                    indexKey++;
+                    if (newAddr != "")
+                    {
+                        addressMap.Add(indexKey, new Utilities.ExcelRowBinder(newRow, newAddr));
+                        indexKey++;
+                    }
                 }
                 
             }

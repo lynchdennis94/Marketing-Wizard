@@ -124,7 +124,7 @@ namespace MarketWizard
                         newEmail.sendEmail();
                         try
                         {
-                            excelObj.logSuccess(keyIndex);
+                            excelObj.logSuccess(currentBinder.getRowNumber());
                         }
                         catch (Exception logException)
                         {

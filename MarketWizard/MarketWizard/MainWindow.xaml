@@ -1,7 +1,7 @@
 ﻿<Window x:Name="mainWindow" x:Class="MarketWizard.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Marketing Wizard" Height="630" Width="861">
+        Title="Marketing Wizard" Height="630" Width="861" Icon="MarketingWizardIcon.ico">
     <Grid x:Name="mainBackground" Background="#FF7295F3">
         <TabControl x:Name="mainTabControl" HorizontalAlignment="Left" Height="473" Margin="27,33,0,0" VerticalAlignment="Top" Width="786">
             <TabItem Header="Test Profile">
