@@ -36,7 +36,7 @@ namespace MarketWizard
 
         private void fillAddressList(Excel.Workbook excelWorkbook, Excel._Worksheet excelWorksheet, Excel.Range excelRange)
         {
-            
+            bool haveEmail=false, haveSent=false;
             int rowCount = excelRange.Rows.Count;
             int colCount = excelRange.Columns.Count;
 
@@ -45,17 +45,53 @@ namespace MarketWizard
             // Get the column that holds email addresses
             for (int potCol = 1; potCol <= colCount; potCol++)
             {
-                String currentColHeading = excelRange.Cells[1, potCol].Value2.ToString();
-                if (currentColHeading.Equals("Email"))
+                if (haveEmail && haveSent)
                 {
-                    emailColumn = potCol;
+                    // We already have all of the information we need, so we don't need to worry
+                    // about scanning potentially harmful columns
+                    break;
                 }
+                try
+                {
+                    String currentColHeading = excelRange.Cells[1, potCol].Value2.ToString();
 
-                // Get the Sent column
-                if (currentColHeading.Equals("Sent"))
-                {
-                    sentCol = potCol;
+                    if (currentColHeading.ToLower().Trim().Equals("email"))
+                    {
+                        emailColumn = potCol;
+                        haveEmail = true;
+                    }
+
+                    // Get the Sent column
+                    if (currentColHeading.ToLower().Trim().Equals("sent"))
+                    {
+                        sentCol = potCol;
+                        haveSent = true;
+                    }
                 }
+                catch (Exception e)
+                {
+                    if (haveEmail && !haveSent)
+                    {
+                        // Since we don't have both but have email, we can continue
+                        break;
+                    }
+                    else if (haveSent && !haveEmail)
+                    {
+                        // We need to send a message box and return to the window
+                        MessageBox.Show("There was an error importing addresses."
+                                    + "\nPlease ensure that there is an 'Email' column, and try again.",
+                                    "Address Importation Error");
+                        return;
+                    }
+                    else
+                    {
+                        // We need to send a message box and return to the window
+                        MessageBox.Show("There was an error importing addresses."
+                                    + "\nPlease ensure that there is an 'Email' and 'Sent' column, and try again.",
+                                    "Address Importation Error");
+                        return;
+                    }
+                }  
             }
 
             if (sentCol == 0)

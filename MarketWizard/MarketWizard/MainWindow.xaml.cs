@@ -86,11 +86,14 @@ namespace MarketWizard
 
         private void startNewBatch()
         {
+            statusText.Text = "Starting new email batch ...";
+            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             bool failureOccurred = false;
             String addressLoc = "", bodyLoc="", subject="", attachmentLoc="", currentDir="";
             gatherEmailStrings(ref addressLoc, ref bodyLoc, ref subject,
                                 ref attachmentLoc, ref currentDir);
-
+            statusText.Text = "Preparing logs for batch ...";
+            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             // Check to see if there is a log folder
             if (!Directory.Exists(currentDir + LOG_DIR))
             {
@@ -98,6 +101,8 @@ namespace MarketWizard
                 Directory.CreateDirectory(currentDir + LOG_DIR);
             }
            // Initiate a new text file to log any issues
+            statusText.Text = "Initializing error logs ...";
+            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             String logFilePath = currentDir + LOG_DIR + "\\error_log_" + DateTime.Now.ToString().Replace(".", "_").Replace(":", "_").Replace("/", "_") + ".txt";
             System.IO.StreamWriter logFile = new System.IO.StreamWriter(logFilePath);
             logFile.WriteLine(LOG_START);
@@ -108,11 +113,21 @@ namespace MarketWizard
             // Create the excel sheet
             ExcelObject excelObj = new ExcelObject(addressLoc);
 
+            statusText.Text = "Loading recepient addresses...";
+            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             // Create the dictionary for the addresses
             Dictionary<int, Utilities.ExcelRowBinder> allAddresses = excelObj.getAddresses();
+            if (allAddresses.Count == 0)
+            {
+                MessageBox.Show("The current email cannot be sent.", "Sorry");
+                subjectTextbox.Text = "";
+                sendButton.IsEnabled = false;
+                return;
+            }
             currentStatus.setObjectiveTotal(allAddresses.Count);
             currentStatus.setStatus("Sending Messages");
             statusText.Text = currentStatus.getObjectiveStatus();
+            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             sendingProgressBar.Maximum = allAddresses.Count;
             
             // Loop through addresses and make a new email for each one
@@ -134,6 +149,7 @@ namespace MarketWizard
                         {
                             currentStatus.incrementCurrentObjective();
                             statusText.Text = currentStatus.getObjectiveStatus();
+                            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
                             excelObj.logSuccess(currentBinder.getRowNumber());
                         }
                         catch (Exception logException)
