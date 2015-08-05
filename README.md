@@ -19,9 +19,6 @@ After the initial commit (which occurred with an already funcitoning program), v
 - Integration with any 3rd-party email provider that can interface through Microsoft Outlook
 - Dynamic logging of email batch, with errors logged by email address for future reference/removal from spreadsheets
 
-# Known Bugs
-- None reported so far
-
 # TODO
 - Create multiple sending profiles
 - Add email validation to message creation, addresses that fail validation will be logged
@@ -38,3 +35,4 @@ After the initial commit (which occurred with an already funcitoning program), v
 - V1.2a: Created a utility ExcelRowBinder class to allow for multiple emails from the same excel row to be stored in a dictionary.  Tested multiple-email lines for confirmation they worked correctly
 - v1.3a: Added new icon, fixed minor bug with email column having a single email with a comma causing exception.  Also modified the way the row column is retrieved for logging so that the sent column isn't overwritten
 - v1.4a: Added a status bar to the program to aid in knowing where in the list the program is
+- v1.5a: Added robustness to column heading comparisons, added exception handling and checks to prevent scanning unnecesary columns.  Fixes included for issues #2 and #3
