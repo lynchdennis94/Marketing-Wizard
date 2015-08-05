@@ -1,4 +1,4 @@
-# Marketing-Wizard v1.4a
+# Marketing-Wizard v1.5a
 A small desktop application to handle your marketing needs!
 
 # About Marketing Wizard
