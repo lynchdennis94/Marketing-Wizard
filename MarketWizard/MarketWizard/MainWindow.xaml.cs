@@ -23,7 +23,20 @@ namespace MarketWizard
     public partial class MainWindow : Window
     {
         private const string LOG_DIR = "\\batch_logs";
-        private const string LOG_START = "Log file for Marketing Wizard v1.1";
+        private const string LOG_START = "Log file for Marketing Wizard v1.5a";
+
+        // Variables for old sessions
+        private string addrFile;
+        private string tempFile;
+        private string attachFile;
+        private string subj;
+        private int nxtRow;
+        private int mailSent;
+        private string nxtAddr;
+        private DateTime oldDT;
+
+        private bool loadingOldValues = false;
+
         private Utilities.StatusTracker currentStatus;
 
         public MainWindow()
@@ -32,6 +45,29 @@ namespace MarketWizard
 
             // Initialize a new status
             currentStatus = new Utilities.StatusTracker();
+
+            // Determine if there were values from the last session
+            if (readInSessionInfo(out oldDT, out addrFile, out nxtRow, out nxtAddr,
+                                    out tempFile, out attachFile, out subj, out mailSent ))
+            {
+                loadingOldValues = true;
+                // Will need to continue session from previous time
+                bodyTextbox.Text = tempFile;
+                //bodyTextbox.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+                
+                attachmentTextbox.Text = attachFile;
+               // attachmentTextbox.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+
+                addressTextbox.Text = addrFile;
+               // addressTextbox.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+
+                subjectTextbox.Text = subj;
+               // subjectTextbox.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+                loadingOldValues = false;
+                previewButton.IsEnabled = true;
+                sendButton.IsEnabled = true;
+            }
+
             
         }
            
@@ -68,24 +104,66 @@ namespace MarketWizard
 
         private void Textbox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!addressTextbox.GetLineText(0).Equals("") && !bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
+            // Catch null exceptions
+            if (addressTextbox.Text == null)
             {
-                sendButton.IsEnabled = true;
-                previewButton.IsEnabled = true;
+                addressTextbox.Text = "";
             }
-            else if (!bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
+
+            if (bodyTextbox.Text == null)
             {
-                sendButton.IsEnabled = false;
-                previewButton.IsEnabled = true;
+                bodyTextbox.Text = "";
             }
-            else
+
+            if (subjectTextbox.Text == null)
             {
-                sendButton.IsEnabled = false;
+                subjectTextbox.Text = "";
             }
+            if(!loadingOldValues)
+            {
+                if (!addressTextbox.GetLineText(0).Equals("") && !bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
+                {
+                    sendButton.IsEnabled = true;
+                    previewButton.IsEnabled = true;
+                }
+                else if (!bodyTextbox.GetLineText(0).Equals("") && !subjectTextbox.GetLineText(0).Equals(""))
+                {
+                    sendButton.IsEnabled = false;
+                    previewButton.IsEnabled = true;
+                }
+                else
+                {
+                    sendButton.IsEnabled = false;
+                }
+            }
+            
         }
 
         private void startNewBatch()
         {
+            int sentMsgLimit;
+            int messagesSent = 0;
+            string stringMsgLimit = limitTextbox.Text;
+            bool hitLimit = false;
+
+            
+
+            // Get the limit on the number of messages to be sent in a session
+            if (stringMsgLimit == null || stringMsgLimit.Equals(""))
+            {
+                sentMsgLimit = Int32.MaxValue;
+            }
+            else
+            {
+                sentMsgLimit = Int32.Parse(limitTextbox.Text);
+            }
+
+           /* if (mailSent > 0 )
+            {
+                // We sent some mail last time, so lower the limit
+                sentMsgLimit
+            }*/
+
             statusText.Text = "Starting new email batch ...";
             statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             bool failureOccurred = false;
@@ -130,62 +208,102 @@ namespace MarketWizard
             statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
             sendingProgressBar.Maximum = allAddresses.Count;
             
+            int nextRowSent = 0;
+            string nextAddressSent = "";
             // Loop through addresses and make a new email for each one
             foreach (int keyIndex in allAddresses.Keys)
             {
-                String newAddr;
-                Utilities.ExcelRowBinder currentBinder;
-                
-                // Need to extract the email value from the ExcelRowBinder
-
-                if (allAddresses.TryGetValue(keyIndex, out currentBinder) == true)
+                if (messagesSent < sentMsgLimit)
                 {
-                    newAddr = currentBinder.getValue();
-                    EmailObject newEmail = new EmailObject(attachmentLoc, bodyLoc, newAddr, subject);
-                    try
+                    String newAddr;
+                    Utilities.ExcelRowBinder currentBinder;
+
+                    // Need to extract the email value from the ExcelRowBinder
+
+                    if (allAddresses.TryGetValue(keyIndex, out currentBinder) == true)
                     {
-                        newEmail.sendEmail();
+                        newAddr = currentBinder.getValue();
+                        EmailObject newEmail = new EmailObject(attachmentLoc, bodyLoc, newAddr, subject);
                         try
                         {
-                            currentStatus.incrementCurrentObjective();
-                            statusText.Text = currentStatus.getObjectiveStatus();
-                            statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
-                            excelObj.logSuccess(currentBinder.getRowNumber());
-                        }
-                        catch (Exception logException)
-                        {
-                            // Do nothing
-                        }
-                        
-                    }
-                    catch (Exception e)
-                    {
-                        // There was some reason the email could not be sent.  Log those errors
-                        logFile.WriteLine("SEND FAILED: " + newAddr);
-                        failureOccurred = true;
+                            newEmail.sendEmail();
+                            try
+                            {
+                                currentStatus.incrementCurrentObjective();
+                                statusText.Text = currentStatus.getObjectiveStatus();
+                                statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+                                excelObj.logSuccess(currentBinder.getRowNumber());
+                            }
+                            catch (Exception logException)
+                            {
+                                // Do nothing
+                            }
 
+                        }
+                        catch (Exception e)
+                        {
+                            // There was some reason the email could not be sent.  Log those errors
+                            logFile.WriteLine("SEND FAILED: " + newAddr);
+                            failureOccurred = true;
+
+                        }
+
+                        sendingProgressBar.Value++;
+                        sendingProgressBar.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
                     }
-                    
-                    sendingProgressBar.Value++;
-                    sendingProgressBar.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
                 }
+                else
+                {
+                    // We've hit the limit, time to stop this
+                    hitLimit = true;
+                    Utilities.ExcelRowBinder currentBinder;
+                    if (allAddresses.TryGetValue(keyIndex, out currentBinder) == true)
+                    {
+                        nextRowSent = currentBinder.getRowNumber();
+                        nextAddressSent = currentBinder.getValue();
+                    }
+                    //lastRowSent = 
+                    break;
+                }
+                messagesSent++;
                 
             }
-            sendingProgressBar.Visibility = System.Windows.Visibility.Hidden;
 
-            // Alert the user that the task is done
-            MessageBox.Show("All emails have been sent!", "Attention!");
-            if (!failureOccurred)
+            string sessionInfoPath = currentDir + "\\StoredSessionInfo.txt";
+                System.IO.StreamWriter sessionInfo = new System.IO.StreamWriter(sessionInfoPath, false); // Overwrite old info
+            if (!hitLimit)
             {
-                logFile.WriteLine("ALL MESSAGES SENT SUCCESSFULLY!!");
+                // Alert the user that the task is done
+                MessageBox.Show("All emails have been sent!", "Attention!");
+                if (!failureOccurred)
+                {
+                    logFile.WriteLine("ALL MESSAGES SENT SUCCESSFULLY!!");
+                }   
+ 
+                // Overwrite the session info
+                writeSessionInfo(sessionInfo, "N", "", 0, "", "", "", "", 0);
             }
+            else
+            {
+                MessageBox.Show("The maximum number of emails have been sent for this session", "Attention");
+                logFile.WriteLine("THE MAXIMUM {0} MESSAGES HAVE BEEN SENT!!", sentMsgLimit);
+
+                // Amend the StoredSessionInfo.txt file
+                
+
+                writeSessionInfo(sessionInfo, "Y", addressLoc, nextRowSent, nextAddressSent, bodyLoc, attachmentLoc, subject, messagesSent);
+            }
+            sessionInfo.Close();
+            sendingProgressBar.Visibility = System.Windows.Visibility.Hidden;
             logFile.Close();
             excelObj.saveAndClose();
+
             MessageBox.Show("All logs have been saved and closed", "Attention!");
-            
+
             subjectTextbox.Clear();
             currentStatus.setStatus("");
             statusText.Text = "";
+            
         }
 
         private void gatherEmailStrings(ref String addressLoc, ref String bodyLoc,
@@ -231,6 +349,126 @@ namespace MarketWizard
             {
                 addressTextbox.Text = ofd.FileName;
             }
+        }
+
+        private void writeSessionInfo(System.IO.StreamWriter writer, string readValues, string addrFile, int row, string addr, 
+                                      string templateFile, string attachments, string subject, int totalMsgsSent)
+        {
+            // Should we read this file next time?
+            writer.WriteLine("READ VALUES: " + readValues);
+            // Last Batch:
+            writer.WriteLine("LAST BATCH: " + DateTime.Now);
+
+            // Last file:
+            writer.WriteLine("LAST FILE: " + addrFile);
+
+            // Last Row:
+            writer.WriteLine("NEXT ROW: " + row);
+
+            // Last Address:
+            writer.WriteLine("NEXT ADDRESS: " + addr);
+
+            // Last Template:
+            writer.WriteLine("LAST TEMPLATE: " + templateFile);
+
+            // Last Attachments:
+            writer.WriteLine("LAST ATTACHMENTS: " + attachments); 
+
+            // Last Subject:
+            writer.WriteLine("LAST SUBJECT: " + subject);
+
+            // Emails Sent
+            writer.WriteLine("EMAILS SENT: " + totalMsgsSent);
+        }
+    
+        private bool readInSessionInfo(out DateTime oldDateTime, out string oldAddressFile, out int oldNextRow,
+                                        out string oldNextAddr, out string oldTemplateFile, out string oldAttachmentFile,
+                                        out string oldSubject, out int oldEmailsSent)
+        {
+            string sessionInfoPath = Directory.GetCurrentDirectory() +"\\StoredSessionInfo.txt";
+            System.IO.StreamReader reader = new System.IO.StreamReader(sessionInfoPath);
+
+            string readValues = reader.ReadLine();
+
+            // Initialize values
+            oldAddressFile = "";
+            oldTemplateFile = "";
+            oldAttachmentFile = "";
+            oldSubject = "";
+            oldNextRow = -1;
+            oldEmailsSent = -1;
+            oldNextAddr = "";
+            oldDateTime = DateTime.Now;
+
+            if (readValues.Contains("READ VALUES: Y"))
+            {
+
+                MessageBoxResult result = MessageBox.Show("You have a previous session mail session that did not complete.\n\r" +
+                                "Would you like to continue that session?\n\r" +
+                                "Please note, if you do not continue this session and start a new session,\n\r" +
+                                "all information for this stored session will be lost."
+                                , "Previous Session Store", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Grab the information from the stored session
+                    string[] tags = {"LAST BATCH: ", "LAST FILE: ", "NEXT ROW: ", "NEXT ADDRESS: ",
+                                    "LAST TEMPLATE: ", "LAST ATTACHMENTS: ", "LAST SUBJECT: ", "EMAILS SENT: "};
+                    /*object[] variables = {oldDateTime, oldAddressFile, oldNextRow, oldNextAddr, 
+                                         oldTemplateFile, oldAttachmentFile, oldSubject, oldEmailsSent};*/
+                    char[] trimChars = { '\n' };
+                    string currentLine = reader.ReadLine();
+                    oldDateTime = setDateTime(tags[0], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldAddressFile = setString(tags[1], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldNextRow = setInt(tags[2], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldNextAddr = setString(tags[3], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldTemplateFile = setString(tags[4], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldAttachmentFile = setString(tags[5], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldSubject = setString(tags[6], currentLine);
+
+                    currentLine = reader.ReadLine();
+                    oldEmailsSent = setInt(tags[7], currentLine);
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        private string setString(string tag, string currentLine)
+        {
+            char[] trimChars = { '\n' };
+            int startIndex = currentLine.IndexOf(tag) + tag.Length;
+            return currentLine.Substring(startIndex).Trim(trimChars);
+        }
+
+        private int setInt(string tag, string currentLine)
+        {
+            char[] trimChars = { '\n' };
+            int startIndex = currentLine.IndexOf(tag) + tag.Length;
+            return Int32.Parse(currentLine.Substring(startIndex).Trim(trimChars));
+        }
+
+        private DateTime setDateTime(string tag, string currentLine)
+        {
+            char[] trimChars = { '\n' };
+            int startIndex = currentLine.IndexOf(tag) + tag.Length;
+            return DateTime.Parse(currentLine.Substring(startIndex).Trim(trimChars));
         }
     }
 }

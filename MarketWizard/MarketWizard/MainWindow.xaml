@@ -21,6 +21,8 @@
                     <Button x:Name="browseAddressButton" Content="..." HorizontalAlignment="Left" Margin="683,163,0,0" VerticalAlignment="Top" Width="42" Height="26" Click="browseAddress_Click"/>
                     <ProgressBar x:Name="sendingProgressBar" HorizontalAlignment="Left" Height="23" Margin="641,398,0,0" VerticalAlignment="Top" Width="139" Visibility="Hidden"/>
                     <TextBox x:Name="statusText" HorizontalAlignment="Left" Height="16" Margin="458,426,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="322" Focusable="False" FontSize="9" TextAlignment="Right" Background="{x:Null}"/>
+                    <TextBox x:Name="limitTextbox" HorizontalAlignment="Left" Height="23" Margin="683,335,0,0" TextWrapping="NoWrap" TextAlignment="Right" MaxLines="1" VerticalAlignment="Top" Width="78"/>
+                    <Label x:Name="limitLabel" Content="Limit on Sent Messages:" HorizontalAlignment="Left" Margin="541,335,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="TabItem">
