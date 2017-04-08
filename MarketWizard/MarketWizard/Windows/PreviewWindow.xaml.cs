@@ -19,8 +19,8 @@ namespace MarketWizard
     /// </summary>
     public partial class PreviewWindow : Window
     {
-        private EmailObject previewEmailObj;
-        public PreviewWindow(EmailObject emailToPreview)
+        private SMTPObject previewEmailObj;
+        public PreviewWindow(SMTPObject emailToPreview)
         {
             previewEmailObj = emailToPreview;
             InitializeComponent();

@@ -23,6 +23,10 @@
                     <TextBox x:Name="statusText" HorizontalAlignment="Left" Height="16" Margin="458,426,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="322" Focusable="False" FontSize="9" TextAlignment="Right" Background="{x:Null}"/>
                     <TextBox x:Name="limitTextbox" HorizontalAlignment="Left" Height="23" Margin="683,335,0,0" TextWrapping="NoWrap" TextAlignment="Right" MaxLines="1" VerticalAlignment="Top" Width="78"/>
                     <Label x:Name="limitLabel" Content="Limit on Sent Messages:" HorizontalAlignment="Left" Margin="541,335,0,0" VerticalAlignment="Top"/>
+                    <Label Content="Email Address" HorizontalAlignment="Left" Margin="84,335,0,0" VerticalAlignment="Top" Width="88"/>
+                    <Label Content="Email Password" HorizontalAlignment="Left" Margin="84,380,0,0" VerticalAlignment="Top" Width="91"/>
+                    <TextBox x:Name="emailTextBox" HorizontalAlignment="Left" Height="23" Margin="177,338,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="216"/>
+                    <PasswordBox x:Name="pwdBox" HorizontalAlignment="Left" Margin="177,380,0,0" VerticalAlignment="Top" Width="216" Height="26"/>
                 </Grid>
             </TabItem>
         </TabControl>

@@ -1,74 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using OutlookApp = Microsoft.Office.Interop.Outlook.Application;
+using System.Net.Mail;
 
 
 namespace MarketWizard
 {
     public class EmailObject
     {
-        private OutlookApp outlookApp;
-        private Outlook.MailItem mailItem;
+        private String from;
+        private String to;
+        private String subject;
+        private String body;
+
+
+        private MailMessage mailMessage;
 
         private const int SECONDS_TO_HALT = 10;
 
-        public EmailObject(String attachmentPath, String bodyPath, String addressString, String subject)
+        public EmailObject(String from, String to, String subject, String bodyFilepath, String attachmentFilepath)
         {
-            // Create stuff for Outlook
-            outlookApp = new OutlookApp();
-            mailItem = outlookApp.CreateItem(Outlook.OlItemType.olMailItem);
+            this.from = from;
+            this.to = to;
+            this.subject = subject;
+            this.body = System.IO.File.ReadAllText(@bodyFilepath);
+            this.mailMessage = new MailMessage(from, to, subject, this.body);
 
-            // Create sender - necessary?
-            Outlook.AddressEntry currentUser = outlookApp.Session.CurrentUser.AddressEntry;
-
-            // Create the email object we are going to use
-            constructEmailObject(attachmentPath, bodyPath, addressString, subject);
-
-        }
-
-        private void constructEmailObject(String attachmentLoc, String bodyLoc, String address, String emailSubject)
-        {
-            // Create all the things that will stay the same just once
-            // Subject
-            mailItem.Subject = emailSubject;
-            // Body
-            mailItem.Body = System.IO.File.ReadAllText(@bodyLoc);
-            // Attachment - split into string array and attach all items
-            String[] separators = {";"};
-            String[] attachments = @attachmentLoc.Split(separators,StringSplitOptions.RemoveEmptyEntries);
-            foreach (String newAttachment in attachments)
-            {
-                mailItem.Attachments.Add(newAttachment, Outlook.OlAttachmentType.olByValue, Type.Missing, Type.Missing);
+            List<Attachment> attachments = getAttachments(attachmentFilepath);
+            foreach (Attachment attachment in attachments) {
+                this.mailMessage.Attachments.Add(attachment);
             }
-            // Add recepient
-            mailItem.Recipients.Add(address);
         }
 
-        public String getSubject()
-        {
-            return mailItem.Subject;
+        private List<Attachment> getAttachments(String attachmentFilepath) {
+            String[] separators = { ";" };
+            String[] attachments = @attachmentFilepath.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            List<Attachment> attachmentList = new List<Attachment>();
+            foreach (String newAttachment in attachments) {
+                attachmentList.Add(new Attachment(newAttachment));
+            }
+
+            return attachmentList;
         }
 
-        public String getBody()
-        {
-            return mailItem.Body;
+        public String getFrom() {
+            return this.from;
         }
 
-        public Outlook.Attachments getAttachments()
-        {
-            return mailItem.Attachments;
+        public String getTo() {
+            return this.to;
         }
 
-        
+        public String getSubject() {
+            return this.subject;
+        }
 
-        public void sendEmail()
-        {
-            mailItem.Send();
-            System.Threading.Thread.Sleep(1000 * SECONDS_TO_HALT);
+        public String getBody() {
+            return this.body;
+        }
+
+        public MailMessage getMessage() {
+            return this.mailMessage;
         }
     }
 }

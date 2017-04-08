@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.Net.Mail;
 
 
 namespace MarketWizard
@@ -92,14 +94,15 @@ namespace MarketWizard
 
         private void previewButton_Click(object sender, RoutedEventArgs e)
         {
-            String addressLoc = "", bodyLoc = "", subject = "", attachmentLoc = "", currentDir = "";
+            // TODO: Implement new preview functionality
+            /*String addressLoc = "", bodyLoc = "", subject = "", attachmentLoc = "", currentDir = "";
             gatherEmailStrings(ref addressLoc, ref bodyLoc, ref subject,
                                 ref attachmentLoc, ref currentDir);
            
-            EmailObject previewEmail = new EmailObject(attachmentLoc, bodyLoc, "previewemail@notanemail.com", subject);
-
+            //EmailObject previewEmail = new EmailObject(attachmentLoc, bodyLoc, "previewemail@notanemail.com", subject);
+            SMTPObject previewEmail = new SMTPObject(attachmentLoc, bodyLoc, "previewemail@notanemail.com", subject, "", "");
             PreviewWindow emailPreviewWindow = new PreviewWindow(previewEmail);
-            emailPreviewWindow.Show();
+            emailPreviewWindow.Show();*/
         }
 
         private void Textbox_TextChanged(object sender, TextChangedEventArgs e)
@@ -146,7 +149,45 @@ namespace MarketWizard
             string stringMsgLimit = limitTextbox.Text;
             bool hitLimit = false;
 
-            
+            // Read in file for login information
+
+
+            // Get the login information before we start ANY logging/emailing
+            /*LoginObject loginObject = new LoginObject();
+            Windows.LoginWindow lWindow = new Windows.LoginWindow(loginObject);
+            lWindow.Show();
+
+            // Wait for window to close
+            while (lWindow != null)
+            {
+                lWindow.Activate();
+                continue;
+            }
+
+            // Assuming we have given control up to lWindow, and now have it back
+            if (loginObject.getAddress().Equals("NULL"))
+            {
+                // User cancelled out of login
+                return;
+            }
+
+            string loginAddress = loginObject.getAddress();
+            string loginPassword = loginObject.getPassword();*/
+
+            string loginAddress = emailTextBox.Text;
+            string loginPassword = pwdBox.Password;
+
+            if (loginAddress.Equals(""))
+            {
+                MessageBox.Show("Please enter an email address", "Attention");
+                return;
+            }
+
+            if (loginPassword.Equals(""))
+            {
+                MessageBox.Show("Please enter a password", "Attention");
+                return;
+            }
 
             // Get the limit on the number of messages to be sent in a session
             if (stringMsgLimit == null || stringMsgLimit.Equals(""))
@@ -185,8 +226,8 @@ namespace MarketWizard
             System.IO.StreamWriter logFile = new System.IO.StreamWriter(logFilePath);
             logFile.WriteLine(LOG_START);
             logFile.WriteLine("****************************");
-            
-            
+
+            Console.WriteLine("file is at " + logFilePath);
 
             // Create the excel sheet
             ExcelObject excelObj = new ExcelObject(addressLoc);
@@ -206,6 +247,7 @@ namespace MarketWizard
             currentStatus.setStatus("Sending Messages");
             statusText.Text = currentStatus.getObjectiveStatus();
             statusText.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, (Action)delegate() { });
+            sendingProgressBar.Value = 0;
             sendingProgressBar.Maximum = allAddresses.Count;
             
             int nextRowSent = 0;
@@ -223,10 +265,20 @@ namespace MarketWizard
                     if (allAddresses.TryGetValue(keyIndex, out currentBinder) == true)
                     {
                         newAddr = currentBinder.getValue();
-                        EmailObject newEmail = new EmailObject(attachmentLoc, bodyLoc, newAddr, subject);
+                        //EmailObject newEmail = new EmailObject(attachmentLoc, bodyLoc, newAddr, subject);
+                        SMTPObject newEmail = new SMTPObject(attachmentLoc, bodyLoc, newAddr, subject, loginAddress, loginPassword);
                         try
                         {
                             newEmail.sendEmail();
+
+                            if (newEmail.connectionError)
+                            {
+                                MessageBox.Show("Could not login to specified email account.\nPlease confirm the login details and try again", "Error");
+                                logFile.WriteLine("LOGIN FAILED: " + loginAddress);
+                                failureOccurred = true;
+                                break;
+                            }
+
                             try
                             {
                                 currentStatus.incrementCurrentObjective();
@@ -237,12 +289,23 @@ namespace MarketWizard
                             catch (Exception logException)
                             {
                                 // Do nothing
+                                Console.WriteLine("Error in trying to log stuff");
                             }
 
+                        }
+                        catch (SmtpException emailException)
+                        {
+                            MessageBox.Show("Could not login to specified email account.\nPlease confirm the login details and try again", "Error");
+                            logFile.WriteLine("LOGIN FAILED: " + loginAddress);
+                            failureOccurred = true;
+                            break;
                         }
                         catch (Exception e)
                         {
                             // There was some reason the email could not be sent.  Log those errors
+                            Console.WriteLine("Error in trying to send stuff");
+                            Console.WriteLine("Trace: \n" + e.Message);
+                            Console.WriteLine("Extended Trace: \n" + e.StackTrace);
                             logFile.WriteLine("SEND FAILED: " + newAddr);
                             failureOccurred = true;
 
