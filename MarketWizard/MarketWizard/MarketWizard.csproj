@@ -88,16 +88,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Objects\LoginObject.cs" />
-    <Compile Include="Objects\MessageObject.cs" />
-    <Compile Include="Objects\SMTPObject.cs" />
-    <Compile Include="Utilities\ExcelRowBinder.cs" />
-    <Compile Include="Utilities\StatusTracker.cs" />
-    <Page Include="Windows\LoginWindow.xaml">
+    <Compile Include="Models\EmailMessage.cs" />
+    <Compile Include="Models\IMessage.cs" />
+    <Compile Include="Objects - v1\LoginObject.cs" />
+    <Compile Include="Objects - v1\MessageObject.cs" />
+    <Compile Include="Objects - v1\SMTPObject.cs" />
+    <Compile Include="Utilities - v1\ExcelRowBinder.cs" />
+    <Compile Include="Utilities - v1\StatusTracker.cs" />
+    <Page Include="Windows - v1\LoginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Windows\MainWindow.xaml">
+    <Page Include="Windows - v1\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -105,22 +107,22 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Objects\EmailObject.cs" />
-    <Compile Include="Objects\ExcelObject.cs" />
-    <Compile Include="Windows\LoginWindow.xaml.cs">
+    <Compile Include="Objects - v1\EmailObject.cs" />
+    <Compile Include="Objects - v1\ExcelObject.cs" />
+    <Compile Include="Windows - v1\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Windows\MainWindow.xaml.cs">
+    <Compile Include="Windows - v1\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Windows\PreviewWindow.xaml">
+    <Page Include="Windows - v1\PreviewWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Windows\PreviewWindow.xaml.cs">
+    <Compile Include="Windows - v1\PreviewWindow.xaml.cs">
       <DependentUpon>PreviewWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -208,6 +210,7 @@
   <ItemGroup>
     <Resource Include="MarketingWizardIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

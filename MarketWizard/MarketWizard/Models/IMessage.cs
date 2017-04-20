@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MarketWizard.Models {
     interface IMessage {
-        public List<String> getRecepients();
-        public String getBody();
+        List<String> getRecepients();
+        String getBody();
     }
 }

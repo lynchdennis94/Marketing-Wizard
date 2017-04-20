@@ -5,14 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MarketWizard.Models {
-    class EmailMessage : IMessage{
+    public class EmailMessage : IMessage{
         private List<String> recepients;
         private String subject;
         private String body;
+        private List<String> attachments;
 
         public EmailMessage(String subject, String body) {
             this.subject = subject;
             this.body = body;
+            this.attachments = new List<String>();
         }
 
         public EmailMessage(String recepient, String subject, String body) : this(subject, body) {
@@ -35,6 +37,14 @@ namespace MarketWizard.Models {
 
         public String getSubject() {
             return subject;
+        }
+
+        public void addAttachment(String attachmentFilepath) {
+            attachments.Add(attachmentFilepath);
+        }
+
+        public List<String> getAttachments() {
+            return attachments;
         }
     }
 }
